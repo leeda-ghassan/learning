@@ -1,52 +1,66 @@
-from sqlalchemy import select, insert, update, delete
-from src.skills.schemas import skill
-from src.database.execution import db_client
-from src.skills.models import SkillCreate
 from uuid import UUID
+from src.skills.models import SkillCreate, SkillResponse, SkillUpdate
+from src.skills.queries import SkillQueries
 
-class SkillQueries:
+
+class SkillsService:
     def __init__(self):
-        self.db_client = db_client
+        self.skills_queries = SkillQueries()
 
-    def create_skill(self, skill_data: SkillCreate):
-        row = (
-            insert(skill)
-            .values(dict(skill_data.model_dump(exclude_unset=True)))
-            .returning(skill)
-        )
-        result = self.db_client.execute_one(row)
-        return result    
+    def get_skills(self):
+        try:
+            rows = self.skills_queries.list_skills()
+            if not rows:
+                return None
+            skill_list = [SkillResponse(**dict(r)) for r in rows]
+            return skill_list
+        except Exception as e:
+            print(f"Error fetching skills: {e}")
+            return None
 
     def get_skill_by_id(self, skill_id: UUID):
-        row = select(skill).where(skill.c.id == skill_id)
-        result = self.db_client.execute_one(row)
-        return result
+        try:
+            row = self.skills_queries.get_skill_by_id(skill_id)
+            if not row:
+                return None
+            skill_data = SkillResponse(**dict(row))
+            return skill_data
+        except Exception as e:
+            print(f"Error fetching skill by id: {e}")
+            return None
 
-    def get_skill_by_name(self, name: str):
-        row = select(skill).where(skill.c.name == name)
-        result = self.db_client.execute_one(row)
-        return result
+    def create_skill(self, skill_data: SkillCreate):
+        try:
+            existing = self.skills_queries.get_skill_by_name(skill_data.name)
+            if existing:
+                return 500, None
+            row = self.skills_queries.create_skill(skill_data)
+            if not row:
+                return 400, None
+            skill_data_resp: SkillResponse = SkillResponse(**dict(row))
+            return 200, skill_data_resp
+        except Exception as e:
+            print(f"Error creating skill: {e}")
+            return 400, None
 
-    def update_skill_by_id(self, skill_id: UUID, update_data: dict):
-        row = (
-            update(skill)
-            .where(skill.c.id == skill_id)
-            .values(**update_data)
-            .returning(skill)
-        )
-        result = self.db_client.execute_one(row)
-        return result
+    def update_skill(self, skill_id: UUID, update_data: SkillUpdate):
+        try:
+            row = self.skills_queries.update_skill_by_id(skill_id, update_data)
+            if not row:
+                return None
+            skill_data: SkillResponse = SkillResponse(**dict(row))
+            return skill_data
+        except Exception as e:
+            print(f"Error updating skill: {e}")
+            return None
 
-    def delete_skill_by_id(self, skill_id: UUID):
-        row = (
-            delete(skill)
-            .where(skill.c.id == skill_id)
-            .returning(skill)
-        )
-        result = self.db_client.execute_one(row)
-        return result    
-
-    def list_skills(self):
-        row = select(skill)
-        result = self.db_client.execute_all(row)
-        return result
+    def delete_skill(self, skill_id: UUID):
+        try:
+            row = self.skills_queries.delete_skill_by_id(skill_id)
+            if not row:
+                return None
+            skill_data: SkillResponse = SkillResponse(**dict(row))
+            return skill_data
+        except Exception as e:
+            print(f"Error deleting skill: {e}")
+            return None

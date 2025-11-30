@@ -1,51 +1,47 @@
 from sqlalchemy import select, insert, update, delete
-from src.skills.schemas import skill
+from src.skills.schemas import skills
 from src.database.execution import db_client
-from src.skills.models import SkillCreate
+from src.skills.models import SkillCreate, SkillUpdate
 from uuid import UUID
+
 
 class SkillQueries:
     def __init__(self):
         self.db_client = db_client
 
     def create_skill(self, skill_data: SkillCreate):
-        row = (
-            insert(skill)
-            .values(dict(skill_data.model_dump(exclude_unset=True)))
-            .returning(skill)
-        )
-        result = self.db_client.execute_one(row)
-        return result    
+        data = dict(skill_data.model_dump(exclude_unset=True))
+        stmt = insert(skills).values(**data).returning(skills)
+        result = self.db_client.execute_one(stmt)
+        return result
 
     def get_skill_by_id(self, skill_id: UUID):
-        row = select(skill).where(skill.c.id == skill_id)
-        result = self.db_client.execute_one(row)
+        stmt = select(skills).where(skills.c.id == skill_id)
+        result = self.db_client.execute_one(stmt)
         return result
 
     def get_skill_by_name(self, name: str):
-        row = select(skill).where(skill.c.name == name)
-        result = self.db_client.execute_one(row)
+        stmt = select(skills).where(skills.c.name == name)
+        result = self.db_client.execute_one(stmt)
         return result
 
-    def update_skill_by_id(self, skill_id: UUID):
-        row = (
-            update(skill)
-            .where(skill.c.id == skill_id)
-            .returning(skill)
+    def update_skill_by_id(self, skill_id: UUID, update_data: SkillUpdate):
+        data = dict(update_data.model_dump(exclude_unset=True))
+        stmt = (
+            update(skills)
+            .where(skills.c.id == skill_id)
+            .values(**data)
+            .returning(skills)
         )
-        result = self.db_client.execute_one(row)
+        result = self.db_client.execute_one(stmt)
         return result
 
     def delete_skill_by_id(self, skill_id: UUID):
-        row = (
-            delete(skill)
-            .where(skill.c.id == skill_id)
-            .returning(skill)
-        )
-        result = self.db_client.execute_one(row)
-        return result    
+        stmt = delete(skills).where(skills.c.id == skill_id).returning(skills)
+        result = self.db_client.execute_one(stmt)
+        return result
 
     def list_skills(self):
-        row = select(skill)
-        result = self.db_client.execute_all(row)
+        stmt = select(skills)
+        result = self.db_client.execute_all(stmt)
         return result
