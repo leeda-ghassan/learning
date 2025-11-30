@@ -17,7 +17,7 @@ ul {
   width: 100%;
   margin-top: 10px;
   align-content: center;
-  background-color: hsl(91, 96%, 69%);
+  background: linear-gradient(135deg, #b7ff89 0%, #5bfd6e 50%, #a3fffa 100%);
   height: fit-content;
 }
 
@@ -35,7 +35,7 @@ ul li a:hover {
 }
 
 .container {
-    background-color: hwb(207 80% 3%);
+    background: linear-gradient(135deg, #9bf0ff 0%, #3fb2ff 50%, #9effb8 100%);
     width: 100%;
 
 }
@@ -60,7 +60,7 @@ ul li a:hover {
 .btnn{
     margin-top: 10px;
     margin-bottom: 10px;
-    background-color: hsl(103, 95%, 76%);
+    background: linear-gradient(135deg, #04fc90 0%, #89f0dd 50%, #53f871 100%);  
     border-radius: 5px;
     width: 110px;
     height: 30px;
@@ -68,5 +68,5 @@ ul li a:hover {
 }
 
 .btnn:hover{
-    background-color: rgb(95, 236, 107);
+    background-color: rgb(160, 255, 168);
 }
